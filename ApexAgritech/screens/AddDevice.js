@@ -11,30 +11,35 @@ import {
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation, ParamListBase } from "@react-navigation/native";
 import { Color, FontSize, FontFamily } from "../GlobalStyles";
+import { useState } from "react";
+import { set, ref, push } from 'firebase/database';
+import { db } from '../components/config';
 
 
 
 
-function addDevice(){
-  //const newKey = push(child(ref(database), 'users')).key;
-  set(ref(db, 'devices/' + deviceName), {
+
+function addDevice(deviceName, location, otherInfo) {
+  const deviceNameStr = typeof deviceName === 'object' ? deviceName.deviceName : deviceName;
+  set(ref(db, 'devices/' + deviceNameStr), {
     deviceName: deviceName,
     location: location,
     otherInfo: otherInfo
   }).then(() => {
-    //Data saved successfully
-    alert('data created');
-  })
-    .catch((error) => {
-      //Write failed
-      alert(error);
-    });
-};
+    // Data saved successfully
+    alert('Data created');
+  }).catch((error) => {
+    // Write failed
+    alert(error);
+  });
+}
+
 
 const FrameAddNewDevice = () => {
   const navigation = useNavigation();
   const [deviceName, setName] = useState('');
   const [location, setLocation] = useState('');
+  const [otherInfo, setOtherInfo] = useState('');
   return (
     <View style={styles.frameAddNewDevice}>
       <View style={[styles.manageDevices, styles.manageDevicesPosition]}>
@@ -75,10 +80,16 @@ const FrameAddNewDevice = () => {
           </Text>
           <TextInput style={[styles.nameBox, styles.boxLayout]} value ={deviceName} onChangeText={(deviceName)=>{setName(deviceName)}} placeholder="Example01"/>
           <TextInput style={[styles.locationBox, styles.boxLayout]} value ={location} onChangeText={(location)=>{setLocation(location)}} placeholder="Backyard"/>
-          <TextInput style={[styles.otherInfoBox, styles.boxLayout]} value ={otherInfo} onChangeText={(otherInfo)=>{setInfo(otherInfo)}} placeholder="Chickens, Quail, Geese"/>
-          <Pressable style={styles.addNew}>
-            <Text style={styles.addNew1} onPress={addDevice}>Add New Device</Text>
-          </Pressable>
+          <TextInput style={[styles.otherInfoBox, styles.boxLayout]} value ={otherInfo} onChangeText={(otherInfo)=>{setOtherInfo(otherInfo)}} placeholder="Chickens, Quail, Geese"/>
+          <Pressable style={styles.addNew} onPress={() => {
+  if(deviceName && deviceName.trim() !== '') { // Check if deviceName is defined and not empty
+    addDevice(deviceName, location, otherInfo);
+  } else {
+    alert('Device name cannot be empty');
+  }
+}}>
+  <Text style={styles.addNew1}>Add New Device</Text>
+</Pressable>
         </View>
       </View>
     </View>
